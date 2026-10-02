@@ -48,7 +48,7 @@ def main():
     prefixes = tuple(f"{e}_" for e in args.events)
     counts = Counter()
     print(f"Extracting events: {', '.join(args.events)}")
-    with tarfile.open(args.archive, "r|*")  # .tar or .tar.gz as tar:
+    with tarfile.open(args.archive, "r|*") as tar:  # .tar or .tar.gz
         for member in tar:
             if not member.isfile():
                 continue
