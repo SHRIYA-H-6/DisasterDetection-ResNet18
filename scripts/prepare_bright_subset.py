@@ -25,7 +25,9 @@ import numpy as np
 import tifffile
 
 SEVERITY_EDGES = (0.10, 0.30)  # damaged share of building pixels: Low <= 10% < Moderate <= 30% < Severe
-NAME = re.compile(r"(?:^|/)(pre-event|post-event|target)/([^/]+?)_(\d+)_(pre_disaster|post_disaster|building_damage)\.tif$")
+# The kind of file is read from its name, so zips with or without pre-event/ post-event/ target/ folders work.
+NAME = re.compile(r"(?:^|/)([^/]+?)_(\d+)_(pre_disaster|post_disaster|building_damage)\.tif$", re.IGNORECASE)
+FOLDER = {"pre_disaster": "pre-event", "post_disaster": "post-event", "building_damage": "target"}
 
 
 def list_sources(paths):
@@ -37,14 +39,14 @@ def list_sources(paths):
             for name in zf.namelist():
                 m = NAME.search(name.replace("\\", "/"))
                 if m:
-                    tiles[(m.group(2), m.group(3))][m.group(1)] = (os.path.basename(name), lambda z=zf, n=name: io.BytesIO(z.read(n)))
+                    tiles[(m.group(1), m.group(2))][FOLDER[m.group(3).lower()]] = (name.replace("\\", "/").rsplit("/", 1)[-1], lambda z=zf, n=name: io.BytesIO(z.read(n)))
         else:
             for root, _, files in os.walk(path):
                 for fname in files:
                     full = os.path.join(root, fname)
                     m = NAME.search(full.replace("\\", "/"))
                     if m:
-                        tiles[(m.group(2), m.group(3))][m.group(1)] = (fname, lambda f=full: open(f, "rb"))
+                        tiles[(m.group(1), m.group(2))][FOLDER[m.group(3).lower()]] = (fname, lambda f=full: open(f, "rb"))
     return tiles
 
 
