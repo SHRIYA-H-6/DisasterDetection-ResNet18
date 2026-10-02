@@ -32,7 +32,7 @@ def sha1_of(path, chunk=8 * 1024 * 1024):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("archive", help="downloaded xBD challenge training .tar.gz")
+    p.add_argument("archive", help="downloaded xBD challenge training archive (.tar.gz or .tar)")
     p.add_argument("out_dir", help="folder to write train/images, train/labels, train/targets into")
     p.add_argument("--events", nargs="+", default=DEFAULT_EVENTS, help="xBD event names to keep")
     p.add_argument("--skip-hash", action="store_true", help="skip SHA1 verification")
@@ -48,7 +48,7 @@ def main():
     prefixes = tuple(f"{e}_" for e in args.events)
     counts = Counter()
     print(f"Extracting events: {', '.join(args.events)}")
-    with tarfile.open(args.archive, "r|gz") as tar:
+    with tarfile.open(args.archive, "r|*")  # .tar or .tar.gz as tar:
         for member in tar:
             if not member.isfile():
                 continue
